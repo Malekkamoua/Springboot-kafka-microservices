@@ -7,6 +7,8 @@ import com.malekkamoua.meet5.userservice.Constants.AppConstant;
 import com.malekkamoua.meet5.userservice.models.*;
 import com.malekkamoua.meet5.userservice.models.kafka.InteractionResponse;
 import com.malekkamoua.meet5.userservice.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,10 +32,12 @@ public class UserController {
 
     @Autowired
     KafkaTemplate<String, Interaction> kafkaTemplate;
+    Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping(path = "/all")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
+        logger.info("Getting all users");
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
@@ -41,8 +45,10 @@ public class UserController {
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
         if (user != null) {
+            logger.info("Getting user by id");
             return new ResponseEntity<>(user, HttpStatus.OK);
         } else {
+            logger.info("user not found");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
@@ -58,6 +64,7 @@ public class UserController {
                 return new ResponseEntity<>("Username is not unique", HttpStatus.CONFLICT);
             }
         } catch (IllegalArgumentException e) {
+            logger.error(String.valueOf(e));
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -195,7 +202,6 @@ public class UserController {
             notificationList.add(notification);
         }
         userService.insertBatchNotifications(notificationList);
-        System.out.print("saved notif");
         return new ResponseEntity<>("Notifications added with success", HttpStatus.OK);
     }
 }

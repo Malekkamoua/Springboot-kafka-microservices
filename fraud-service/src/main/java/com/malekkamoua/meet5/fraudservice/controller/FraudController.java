@@ -5,6 +5,8 @@ import com.malekkamoua.meet5.fraudservice.constant.AppConstant;
 import com.malekkamoua.meet5.fraudservice.models.Fraud;
 import com.malekkamoua.meet5.fraudservice.models.Interaction;
 import com.malekkamoua.meet5.fraudservice.service.FraudService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,7 @@ public class FraudController {
     private FraudService fraudService;
     @Autowired
     private KafkaTemplate<String, Fraud> kafkaTemplate;
+    Logger logger = LoggerFactory.getLogger(FraudController.class);
 
     @KafkaListener(topics = AppConstant.USER_INTERACTIONS, groupId = AppConstant.FRAUD_CONS_GROUP)
     public String consume(String interactionObject) {
@@ -42,8 +45,10 @@ public class FraudController {
 
                 kafkaTemplate.send(AppConstant.FRAUD, fraud);
             }
-            return "Fraudulent activity. Blocked user";
+            logger.warn("ATTENTION FRAUDULENT ACTIVITY DETECTED");
+            return "Fraudulent activity.";
         } catch (Exception e) {
+            logger.error(String.valueOf(e));
             return "An unexpected error occurred. Error: " + e.getMessage();
         }
     }

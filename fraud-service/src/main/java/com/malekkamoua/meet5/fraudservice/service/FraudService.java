@@ -31,9 +31,9 @@ public class FraudService {
     public boolean isFraudulentInteraction(Interaction interaction) {
         String interactorId = interaction.getInteractorID();
         
-        restartCalculation(interaction.getInteractorID());
-        int actionsCount = interactionsCount.getOrDefault(interaction.getInteractorID(), 0);
-        interactionsCount.put(interaction.getInteractorID(), actionsCount + 1);
+        restartCalculation(interactorId);
+        int actionsCount = interactionsCount.getOrDefault(interactorId, 0);
+        interactionsCount.put(interactorId, actionsCount + 1);
 
         return actionsCount > AppConstant.MAX_INTERACTIONS;
     }

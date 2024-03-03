@@ -5,6 +5,8 @@ import com.malekkamoua.meet5.interactionservice.constants.AppConstant;
 import com.malekkamoua.meet5.interactionservice.models.Interaction;
 import com.malekkamoua.meet5.interactionservice.models.kafka.InteractionResponse;
 import com.malekkamoua.meet5.interactionservice.service.InteractionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,6 +22,7 @@ public class InteractionController {
     private InteractionService interactionService;
     @Autowired
     private KafkaTemplate<String, List<Interaction>> kafkaProdTemplate;
+    Logger logger = LoggerFactory.getLogger(InteractionController.class);
 
     //Listens to user-interactions-topic and saves the interactions (Likes, visits) accordingly
     @KafkaListener(topics = AppConstant.USER_INTERACTIONS, groupId = AppConstant.USER_INTERACTIONS_GROUP)
@@ -39,8 +42,11 @@ public class InteractionController {
             List<Interaction>  visitInteractions =  interactionService.getInteractionsByIdAndType(interactionResponse.getInteractorID(), AppConstant.INTERACTION_TYPE_VISIT);
             kafkaProdTemplate.send(AppConstant.VISIT_INTERACTIONS, visitInteractions);
 
+            logger.info("successfully saved interaction");
+
             return "Interaction" + interaction.toString() + "saved.";
         } catch (Exception e) {
+            logger.error(String.valueOf(e));
             return "An unexpected error occurred. Error: " + e.getMessage();
         }
     }
