@@ -7,7 +7,6 @@ import com.malekkamoua.meet5.userservice.Constants.AppConstant;
 import com.malekkamoua.meet5.userservice.models.*;
 import com.malekkamoua.meet5.userservice.models.kafka.InteractionResponse;
 import com.malekkamoua.meet5.userservice.service.UserService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.malekkamoua.meet5.userservice.validators.UserValidation.validateUser;
 
@@ -168,6 +166,36 @@ public class UserController {
         }catch (Exception e) {
             return new ResponseEntity<>("An unexpected error occurred. Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
 
+    @KafkaListener(topics = AppConstant.LIKE_INTERACTIONS)
+    public ResponseEntity<String> consumeLikesInfo(String message) {
+        interactionMessage = message;
+        try{
+            saveNotifications(interactionMessage);
+        }catch (Exception e) {
+            return new ResponseEntity<>("An unexpected error occurred. Error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private ResponseEntity<String> saveNotifications(String interactionMessage) throws JsonProcessingException {
+        List<InteractionResponse> interactionResponses = objectMapper.readValue(interactionMessage, new TypeReference<List<InteractionResponse>>() {});
+        List<Notification> notificationList = new ArrayList<>();
+
+        for (InteractionResponse interaction: interactionResponses) {
+
+            String originalString = AppConstant.INTERACTION_TYPE_VISIT.equals(interaction.getInteractionType()) ?  AppConstant.NOTIFICATIONS_TYPE_VISIT : AppConstant.NOTIFICATIONS_TYPE_LIKE;
+            String timestampToDate = interaction.getTimeStamp().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+
+            String notifMsg  = originalString
+                    .replace("#0", userService.getUserById(Long.parseLong(interaction.getInteractor_id())).getUsername())
+                    .replace("#1", timestampToDate);
+            Notification notification = new Notification(Long.parseLong(interaction.getInteracted_with_id()), notifMsg);
+            notificationList.add(notification);
+        }
+        userService.insertBatchNotifications(notificationList);
+        System.out.print("saved notif");
+        return new ResponseEntity<>("Notifications added with success", HttpStatus.OK);
     }
 }
