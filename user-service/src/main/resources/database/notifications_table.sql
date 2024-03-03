@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    userID BIGINT NOT NULL,
+    message VARCHAR(255),
+    FOREIGN KEY (userID) REFERENCES users(id)
+);
