@@ -6,9 +6,6 @@ import com.malekkamoua.meet5.interactionservice.models.Interaction;
 import com.malekkamoua.meet5.interactionservice.models.kafka.InteractionResponse;
 import com.malekkamoua.meet5.interactionservice.service.InteractionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +20,6 @@ public class InteractionController {
     private InteractionService interactionService;
     @Autowired
     private KafkaTemplate<String, List<Interaction>> kafkaProdTemplate;
-    @Autowired
-    private KafkaTemplate<String, InteractionResponse> kafkaConsTemplate;
 
     //Listens to user-interactions-topic and saves the interactions (Likes, visits) accordingly
     @KafkaListener(topics = AppConstant.USER_INTERACTIONS, groupId = AppConstant.USER_INTERACTIONS_GROUP)
