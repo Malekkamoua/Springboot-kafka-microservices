@@ -10,6 +10,6 @@ public class AppConstant {
     public static  final String FRAUD_CONS_GROUP =  "my-fraud-consumer-group";
 
     //Fraud constants
-    public static final int MAX_INTERACTIONS = 1;
+    public static final int MAX_INTERACTIONS = 100;
     public static final int TIME_IN_MINUTES = 10;
 }
