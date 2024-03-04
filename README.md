@@ -13,7 +13,7 @@ kafka: kafka_2.13
 - **User service Endpoints** 
   - User CRUD operations: /user
   - /user/interact
-  - /user/profile/2/visitors
+  - /user/profile/{user_id}/visitors
 - **Interaction service Endpoints**
   - /interaction
 - **Fraud service Endpoints**
